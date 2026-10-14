@@ -1,0 +1,155 @@
+{
+  "users": [
+    {
+      "id": "usr_f1",
+      "role": "farmer",
+      "email": "mwangi.farmer@agrifund.ke",
+      "full_name": "John Mwangi",
+      "national_id": "28471920",
+      "phone_number": "+254712345678",
+      "county": "Nakuru",
+      "mpesa_number": "254712345678",
+      "farm_size": "5.5 Acres",
+      "primary_crop": "Maize & Potatoes",
+      "lat": -0.3031,
+      "lng": 36.08,
+      "agriscore": 88,
+      "status": "Active"
+    },
+    {
+      "id": "usr_a1",
+      "role": "admin",
+      "email": "admin.omondi@agrifund.ke",
+      "full_name": "Sarah Omondi",
+      "phone_number": "+254722998877",
+      "employee_id": "AGY-ADM-0042",
+      "department": "Agricultural Risk & Systems Administration",
+      "status": "Active"
+    },
+    {
+      "id": "usr_e1",
+      "role": "extension_officer",
+      "email": "officer.kiprop@kalro.org",
+      "full_name": "Dr. Joseph Kiprop",
+      "phone_number": "+254733445566",
+      "staff_id": "KALRO-EXT-8891",
+      "organization": "Kenya Agricultural & Livestock Research Organization (KALRO)",
+      "county": "Nakuru",
+      "verification_status": "Accredited",
+      "areas_of_specialization": [
+        "Agronomy",
+        "Soil Science",
+        "Precision Irrigation"
+      ],
+      "status": "Active"
+    },
+    {
+      "id": "usr_b1",
+      "role": "bank",
+      "email": "agri.credit@equitygroupholdings.com",
+      "bank_name": "Equity Bank Kenya Ltd",
+      "bank_registration": "CBK/BNK/021",
+      "head_office_address": "Equity Centre, Hospital Road, Upper Hill, Nairobi",
+      "official_email": "agri.credit@equitygroupholdings.com",
+      "official_phone": "+254763000000",
+      "partnership_status": "Active",
+      "allocated_capital": "KES 250,000,000",
+      "status": "Active"
+    }
+  ],
+  "assessments": [
+    {
+      "id": "ASM-2026-9149",
+      "farmer_id": "usr_f1",
+      "farmer_name": "Mary Wanjiku",
+      "national_id": "30192847",
+      "county": "Uasin Gishu",
+      "crop": "Maize",
+      "acreage": 8,
+      "mpesa_number": "254722334455",
+      "loan_requested": 200000,
+      "request_date": "2026-10-14",
+      "status": "Assessed & Verified",
+      "scores": {
+        "climate": {
+          "rainfall_suitability": 7,
+          "temperature_suitability": 5,
+          "drought_exposure": 4.2,
+          "environmental_resilience": 2.8,
+          "total": 19,
+          "metrics": {
+            "avgDailyRainfallMm": 6.28,
+            "totalRainfallMm": 289.1,
+            "avgTempC": 20.4,
+            "maxTempC": 30.3,
+            "maxDrySpellDays": 8,
+            "flashFloodDays": 0,
+            "daysSampled": 46
+          }
+        },
+        "financial": 24,
+        "agronomic": 19,
+        "extension": 18,
+        "market_offtake": 14,
+        "total_agriscore": 94,
+        "grade": "Grade A (Prime)",
+        "risk_level": "Very Low Risk (Instant Auto-Approve)",
+        "recommended_loan_kes": 500000,
+        "recommended_interest_rate": "9.5% p.a."
+      },
+      "extension_review": {
+        "officer": "Agricultural Extension Officer",
+        "verified": true,
+        "comments": "Audited Maize plot in Uasin Gishu. Recommended for loan sanction under Tripartite Escrow.",
+        "date": "2026-10-14"
+      },
+      "bank_decision": {
+        "status": "Ready for Bank Sanction",
+        "allocated_bank": "Equity Bank Kenya Ltd"
+      }
+    },
+    {
+      "id": "ASM-2026-001",
+      "farmer_id": "usr_f1",
+      "farmer_name": "John Mwangi",
+      "national_id": "28471920",
+      "county": "Nakuru",
+      "crop": "Maize",
+      "acreage": 5.5,
+      "mpesa_number": "254712345678",
+      "request_date": "2026-10-10",
+      "status": "Bank Approved",
+      "loan_requested": 150000,
+      "scores": {
+        "climate": {
+          "rainfall_suitability": 6.5,
+          "temperature_suitability": 4.8,
+          "drought_exposure": 4.5,
+          "environmental_resilience": 2.8,
+          "total": 18.6
+        },
+        "financial": 23.5,
+        "agronomic": 18,
+        "extension": 18.5,
+        "market_offtake": 14,
+        "total_agriscore": 92.6,
+        "grade": "Grade A (Prime)",
+        "risk_level": "Very Low Risk"
+      },
+      "extension_review": {
+        "officer": "Dr. Joseph Kiprop",
+        "verified": true,
+        "comments": "Verified soil pH 6.4, excellent drip irrigation installation and KALRO certified seeds in stock.",
+        "date": "2026-10-12"
+      },
+      "bank_decision": {
+        "bank": "Equity Bank Kenya Ltd",
+        "status": "Approved & Disbursed via M-Pesa Escrow",
+        "approved_amount": 150000,
+        "interest_rate": "9.5% p.a.",
+        "repayment_period": "6 Months",
+        "disbursed_at": "2026-10-13"
+      }
+    }
+  ]
+}

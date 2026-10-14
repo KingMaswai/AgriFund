@@ -1,0 +1,65 @@
+/* AgriFund Stylesheet */
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Nav Tab Active Styles */
+.nav-tab {
+  color: #475569;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s ease-in-out;
+}
+
+.nav-tab:hover {
+  color: #059669;
+  background-color: #f1f5f9;
+}
+
+.nav-tab.active {
+  color: #047857;
+  font-weight: 700;
+  background-color: #ecfdf5;
+  border-bottom: 2px solid #059669;
+}
+
+/* Role button styles */
+.role-btn.active {
+  background-color: #ffffff;
+  color: #065f46;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Custom Scrollbars */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Print styling for Bank Credit Memo */
+@media print {
+  header, footer, .role-btn, #roleBanner, button, .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .tab-content {
+    display: block !important;
+  }
+
+  #tab-documentation {
+    display: block !important;
+  }
+}

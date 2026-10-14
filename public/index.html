@@ -1,0 +1,1667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgriFund - Intelligent Agricultural Credit & AgriScore Platform</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Supabase JS Client CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              200: '#a7f3d0',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+            },
+            earth: {
+              50: '#fef3c7',
+              100: '#fde68a',
+              600: '#d97706',
+              800: '#92400e',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
+
+  <!-- Top Announcement Bar -->
+  <div class="bg-slate-900 text-slate-300 text-xs py-1.5 px-4 flex flex-wrap justify-between items-center border-b border-slate-800">
+    <div class="flex items-center space-x-3">
+      <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-900/80 text-emerald-300 border border-emerald-700/50">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse mr-1.5"></span>
+        NASA POWER API: Live Agroclimatology
+      </span>
+      <span class="hidden md:inline text-slate-400">|</span>
+      <span class="hidden md:inline text-slate-300">
+        <i class="fa-solid fa-shield-halved text-emerald-400 mr-1"></i> Deterministic Zero-Default Architecture (DZDA) Active
+      </span>
+    </div>
+    <div class="flex items-center space-x-4">
+      <div class="flex items-center text-xs text-slate-300">
+        <i class="fa-solid fa-cloud text-sky-400 mr-1.5"></i> Supabase Auth:
+        <span id="supabaseStatusBadge" class="ml-1 text-emerald-400 font-medium">Unified Engine Ready</span>
+      </div>
+      <button onclick="openConfigModal()" class="text-xs hover:text-white text-slate-400 flex items-center transition">
+        <i class="fa-solid fa-gear mr-1"></i> Config
+      </button>
+    </div>
+  </div>
+
+  <!-- Primary Navigation -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16 items-center">
+        <!-- Logo -->
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('dashboard')">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-700 to-emerald-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
+            <i class="fa-solid fa-seedling text-xl"></i>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="text-2xl font-black tracking-tight text-slate-900">Agri<span class="text-emerald-600">Fund</span></span>
+              <span class="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">Kenya</span>
+            </div>
+            <p class="text-[11px] text-slate-500 font-medium">Smart Agricultural Credit & Agroclimatology Scoring</p>
+          </div>
+        </div>
+
+        <!-- Role Quick Switcher Pills (Allows testing all 4 roles in 1 click) -->
+        <div class="hidden lg:flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-2">Role:</span>
+          <button onclick="quickSwitchRole('farmer')" id="roleBtn-farmer" class="role-btn px-3 py-1 text-xs font-semibold rounded-lg transition text-slate-600 hover:text-emerald-700">
+            <i class="fa-solid fa-user-tag mr-1"></i> Farmer
+          </button>
+          <button onclick="quickSwitchRole('extension_officer')" id="roleBtn-extension_officer" class="role-btn px-3 py-1 text-xs font-semibold rounded-lg transition text-slate-600 hover:text-emerald-700">
+            <i class="fa-solid fa-clipboard-check mr-1"></i> Extension Officer
+          </button>
+          <button onclick="quickSwitchRole('bank')" id="roleBtn-bank" class="role-btn px-3 py-1 text-xs font-semibold rounded-lg transition text-slate-600 hover:text-emerald-700">
+            <i class="fa-solid fa-building-columns mr-1"></i> Bank
+          </button>
+          <button onclick="quickSwitchRole('admin')" id="roleBtn-admin" class="role-btn px-3 py-1 text-xs font-semibold rounded-lg transition text-slate-600 hover:text-emerald-700">
+            <i class="fa-solid fa-user-shield mr-1"></i> Admin
+          </button>
+        </div>
+
+        <!-- User Profile / Auth Area -->
+        <div class="flex items-center space-x-3">
+          <div id="userProfileBadge" class="hidden sm:flex items-center space-x-2 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg">
+            <div id="userAvatarIcon" class="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold">
+              JM
+            </div>
+            <div class="text-left">
+              <div id="navUserName" class="text-xs font-bold text-slate-900 leading-tight">John Mwangi</div>
+              <div id="navUserRole" class="text-[10px] font-medium text-emerald-700 uppercase tracking-wide">Farmer</div>
+            </div>
+          </div>
+
+          <button onclick="openAuthModal()" id="authActionButton" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition shadow-sm flex items-center space-x-1.5">
+            <i class="fa-solid fa-right-to-bracket"></i>
+            <span id="authActionText">Switch Account</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Secondary Navigation Menu Tabs -->
+    <div class="bg-white border-t border-slate-100 overflow-x-auto scrollbar-none">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-1 sm:space-x-4 py-2">
+        <button onclick="switchTab('dashboard')" id="tabBtn-dashboard" class="nav-tab active flex items-center space-x-2 px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap">
+          <i class="fa-solid fa-gauge-high"></i>
+          <span>Overview</span>
+        </button>
+        <button onclick="switchTab('farmer-request')" id="tabBtn-farmer-request" class="nav-tab flex items-center space-x-2 px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap">
+          <i class="fa-solid fa-file-signature text-emerald-600"></i>
+          <span>Request Assessment</span>
+        </button>
+        <button onclick="switchTab('nasa-studio')" id="tabBtn-nasa-studio" class="nav-tab flex items-center space-x-2 px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap">
+          <i class="fa-solid fa-satellite text-sky-500"></i>
+          <span>NASA Climate Rubric (20 Pts)</span>
+        </button>
+        <button onclick="switchTab('agriscore-rubric')" id="tabBtn-agriscore-rubric" class="nav-tab flex items-center space-x-2 px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap">
+          <i class="fa-solid fa-star-half-stroke text-amber-500"></i>
+          <span>100-Point AgriScore Engine</span>
+        </button>
+        <button onclick="switchTab('extension-portal')" id="tabBtn-extension-portal" class="nav-tab flex items-center space-x-2 px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap">
+          <i class="fa-solid fa-microscope text-indigo-500"></i>
+          <span>Extension Audit</span>
+        </button>
+        <button onclick="switchTab('bank-portal')" id="tabBtn-bank-portal" class="nav-tab flex items-center space-x-2 px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap">
+          <i class="fa-solid fa-landmark text-violet-600"></i>
+          <span>Bank Lending & M-Pesa</span>
+        </button>
+        <button onclick="switchTab('proof-engine')" id="tabBtn-proof-engine" class="nav-tab flex items-center space-x-2 px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap">
+          <i class="fa-solid fa-certificate text-emerald-600"></i>
+          <span>Zero-Default Proof</span>
+        </button>
+        <button onclick="switchTab('documentation')" id="tabBtn-documentation" class="nav-tab flex items-center space-x-2 px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap">
+          <i class="fa-solid fa-book-open text-slate-500"></i>
+          <span>Documentation</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Application Body -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: OVERVIEW DASHBOARD                  -->
+    <!-- ========================================== -->
+    <div id="tab-dashboard" class="tab-content space-y-6">
+      
+      <!-- Role Context Banner -->
+      <div id="roleBanner" class="bg-gradient-to-r from-emerald-800 to-slate-900 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+        <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <div class="inline-flex items-center space-x-2 bg-emerald-500/20 border border-emerald-400/30 px-3 py-1 rounded-full text-xs font-semibold text-emerald-300 mb-2">
+              <i class="fa-solid fa-id-card"></i>
+              <span id="bannerRoleTitle">Farmer Workspace</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight" id="bannerGreeting">
+              Karibu, John Mwangi
+            </h1>
+            <p class="text-slate-300 text-sm mt-1 max-w-2xl" id="bannerDescription">
+              Welcome to AgriFund. Access climate-indexed credit backed by NASA satellite agroclimatology, KALRO field verification, and deterministic M-Pesa escrow repayment.
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="switchTab('farmer-request')" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs transition shadow-md flex items-center space-x-2">
+              <i class="fa-solid fa-plus-circle"></i>
+              <span>Request AgriScore Assessment</span>
+            </button>
+            <button onclick="switchTab('proof-engine')" class="bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold px-4 py-2.5 rounded-xl text-xs transition flex items-center space-x-2">
+              <i class="fa-solid fa-shield-halved text-emerald-400"></i>
+              <span>View Zero-Default Proof</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live KPI Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- KPI 1 -->
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">AgriScore Rating</p>
+            <h3 class="text-2xl font-black text-slate-900 mt-1" id="dashAgriScore">92.6 <span class="text-xs font-semibold text-emerald-600">/ 100</span></h3>
+            <span class="inline-flex items-center text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md mt-1.5">
+              <i class="fa-solid fa-award mr-1"></i> Grade A (Prime Low Risk)
+            </span>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl">
+            <i class="fa-solid fa-star"></i>
+          </div>
+        </div>
+
+        <!-- KPI 2 -->
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">NASA Climate Score</p>
+            <h3 class="text-2xl font-black text-slate-900 mt-1" id="dashClimateScore">18.6 <span class="text-xs font-semibold text-sky-600">/ 20</span></h3>
+            <span class="inline-flex items-center text-[11px] font-semibold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-md mt-1.5">
+              <i class="fa-solid fa-cloud-sun-rain mr-1"></i> Optimal Rainfall & Temp
+            </span>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center text-xl">
+            <i class="fa-solid fa-satellite-dish"></i>
+          </div>
+        </div>
+
+        <!-- KPI 3 -->
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Approved Credit Facility</p>
+            <h3 class="text-2xl font-black text-slate-900 mt-1" id="dashLoanApproved">KES 150,000</h3>
+            <span class="inline-flex items-center text-[11px] font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md mt-1.5">
+              <i class="fa-solid fa-money-bill-transfer mr-1"></i> Disbursed via M-Pesa Escrow
+            </span>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-xl">
+            <i class="fa-solid fa-wallet"></i>
+          </div>
+        </div>
+
+        <!-- KPI 4 -->
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Default Risk Probability</p>
+            <h3 class="text-2xl font-black text-emerald-600 mt-1">0.00%</h3>
+            <span class="inline-flex items-center text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md mt-1.5">
+              <i class="fa-solid fa-lock mr-1"></i> Multi-Pillar Escrow Protected
+            </span>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl">
+            <i class="fa-solid fa-shield-virus"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Action Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Farmer Assessment Status Journey -->
+        <div class="lg:col-span-2 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900">Current Assessment & Loan Cycle</h2>
+              <p class="text-xs text-slate-500">Real-time status of your AgriFund agricultural loan assessment</p>
+            </div>
+            <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+              ASM-2026-001 (Active)
+            </span>
+          </div>
+
+          <!-- Progress Stepper -->
+          <div class="py-4">
+            <div class="flex items-center justify-between relative">
+              <div class="absolute top-1/2 left-0 right-0 h-1 bg-emerald-200 -translate-y-1/2 z-0"></div>
+              
+              <!-- Step 1 -->
+              <div class="relative z-10 flex flex-col items-center">
+                <div class="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shadow">
+                  <i class="fa-solid fa-check"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-800 mt-2">1. Request</span>
+                <span class="text-[10px] text-slate-500">Submitted</span>
+              </div>
+
+              <!-- Step 2 -->
+              <div class="relative z-10 flex flex-col items-center">
+                <div class="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shadow">
+                  <i class="fa-solid fa-check"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-800 mt-2">2. NASA Climate</span>
+                <span class="text-[10px] text-slate-500">18.6/20 Pts</span>
+              </div>
+
+              <!-- Step 3 -->
+              <div class="relative z-10 flex flex-col items-center">
+                <div class="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shadow">
+                  <i class="fa-solid fa-check"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-800 mt-2">3. KALRO Audit</span>
+                <span class="text-[10px] text-slate-500">Verified</span>
+              </div>
+
+              <!-- Step 4 -->
+              <div class="relative z-10 flex flex-col items-center">
+                <div class="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shadow">
+                  <i class="fa-solid fa-check"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-800 mt-2">4. Bank Escrow</span>
+                <span class="text-[10px] text-slate-500">Disbursed M-Pesa</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Assessment Quick Details -->
+          <div class="mt-6 bg-slate-50 rounded-xl p-4 border border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+            <div>
+              <span class="text-slate-400 font-semibold block uppercase text-[10px]">Farm & Location</span>
+              <span class="font-bold text-slate-800">5.5 Acres, Nakuru</span>
+            </div>
+            <div>
+              <span class="text-slate-400 font-semibold block uppercase text-[10px]">Crop / Season</span>
+              <span class="font-bold text-slate-800">Maize (Long Rains)</span>
+            </div>
+            <div>
+              <span class="text-slate-400 font-semibold block uppercase text-[10px]">Disbursement M-Pesa</span>
+              <span class="font-bold text-slate-800 font-mono">0712 345 678</span>
+            </div>
+            <div>
+              <span class="text-slate-400 font-semibold block uppercase text-[10px]">Partner Bank</span>
+              <span class="font-bold text-emerald-700">Equity Bank Kenya</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Zero-Default Quick Proof Widget -->
+        <div class="bg-gradient-to-br from-slate-900 to-emerald-950 text-white rounded-2xl p-6 shadow-sm border border-slate-800 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center space-x-2 text-emerald-400 mb-2">
+              <i class="fa-solid fa-shield-check text-lg"></i>
+              <span class="text-xs font-bold tracking-wider uppercase">Proof of Non-Default</span>
+            </div>
+            <h3 class="text-lg font-bold">Closed-Loop Financial Assurance</h3>
+            <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+              AgriFund combines NASA daily satellite agroclimatology with direct input voucher disbursements and contracted buyer escrow splits. The loan is settled before proceeds reach the farmer.
+            </p>
+            <div class="mt-4 space-y-2 text-xs">
+              <div class="flex items-center text-slate-300">
+                <i class="fa-solid fa-circle-check text-emerald-400 mr-2 text-xs"></i> 0% Cash Diversion (Input Vouchers)
+              </div>
+              <div class="flex items-center text-slate-300">
+                <i class="fa-solid fa-circle-check text-emerald-400 mr-2 text-xs"></i> NASA Parametric Drought Indemnity
+              </div>
+              <div class="flex items-center text-slate-300">
+                <i class="fa-solid fa-circle-check text-emerald-400 mr-2 text-xs"></i> Guaranteed Institutional Off-Taker Escrow
+              </div>
+            </div>
+          </div>
+          <button onclick="switchTab('proof-engine')" class="mt-5 w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition text-center shadow">
+            Launch Proof Stress Tester &rarr;
+          </button>
+        </div>
+      </div>
+
+      <!-- Recent Assessments Table -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-slate-200 flex justify-between items-center">
+          <div>
+            <h3 class="font-bold text-slate-900 text-base">Verified Agricultural Assessments</h3>
+            <p class="text-xs text-slate-500">Recent farm evaluations with NASA climate and extension audit</p>
+          </div>
+          <button onclick="switchTab('farmer-request')" class="text-xs text-emerald-600 hover:text-emerald-700 font-bold flex items-center">
+            <i class="fa-solid fa-plus-circle mr-1"></i> New Assessment
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-50 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-200">
+              <tr>
+                <th class="px-5 py-3">ID & Farmer</th>
+                <th class="px-5 py-3">County / Crop</th>
+                <th class="px-5 py-3">NASA Climate (20)</th>
+                <th class="px-5 py-3">AgriScore (100)</th>
+                <th class="px-5 py-3">Loan Amount</th>
+                <th class="px-5 py-3">Status</th>
+                <th class="px-5 py-3 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="assessmentsTableBody" class="divide-y divide-slate-100">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: FARMER REQUEST ASSESSMENT           -->
+    <!-- ========================================== -->
+    <div id="tab-farmer-request" class="tab-content hidden space-y-6">
+      <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm max-w-4xl mx-auto">
+        <div class="border-b border-slate-200 pb-5 mb-6">
+          <div class="inline-flex items-center space-x-2 bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-xs font-semibold mb-2">
+            <i class="fa-solid fa-file-signature"></i>
+            <span>Farmer Self-Service Application</span>
+          </div>
+          <h2 class="text-2xl font-black text-slate-900">Request Farm AgriScore Assessment</h2>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1">
+            Submit your farm parameters. Our automated system queries NASA POWER agroclimatology for your county and schedules a field verification with an accredited Agricultural Extension Officer.
+          </p>
+        </div>
+
+        <form id="assessmentRequestForm" onsubmit="handleAssessmentSubmit(event)" class="space-y-6">
+          
+          <!-- Section 1: Farmer Identity -->
+          <div>
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">1. Farmer Identification</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
+                <input type="text" id="reqFullName" required class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" value="John Mwangi">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">National ID Number</label>
+                <input type="text" id="reqNationalId" required class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" value="28471920">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">M-Pesa Mobile Number</label>
+                <input type="text" id="reqMpesa" required class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" value="254712345678">
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Farm & Agro-Climatology Location -->
+          <div>
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">2. Farm Geographic & Crop Parameters</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">County (Kenya)</label>
+                <select id="reqCounty" onchange="updateCountyCoordinates()" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                  <option value="Nakuru" selected>Nakuru (Rift Valley)</option>
+                  <option value="Uasin Gishu">Uasin Gishu (Eldoret)</option>
+                  <option value="Kiambu">Kiambu (Central)</option>
+                  <option value="Machakos">Machakos (Eastern)</option>
+                  <option value="Meru">Meru (Mt. Kenya)</option>
+                  <option value="Trans Nzoia">Trans Nzoia (Kitale)</option>
+                  <option value="Narok">Narok (Southern)</option>
+                  <option value="Kisumu">Kisumu (Lake Victoria)</option>
+                  <option value="Nyeri">Nyeri (Central)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Primary Crop</label>
+                <select id="reqCrop" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                  <option value="Maize">White Maize (Grain)</option>
+                  <option value="Potatoes">Irish Potatoes (Solanum)</option>
+                  <option value="French Beans">French Beans (Export Horticulture)</option>
+                  <option value="Coffee">Arabica Coffee</option>
+                  <option value="Tea">Camellia Sinensis (Tea)</option>
+                  <option value="Tomatoes">Tomatoes (Open Field / Greenhouse)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Farm Size (Acres)</label>
+                <input type="number" id="reqAcreage" step="0.5" min="0.5" max="1000" required class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" value="5.5">
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Financing & Extension Details -->
+          <div>
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">3. Credit Request & Extension Assignment</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Loan Capital Requested (KES)</label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-xs font-bold text-slate-400">KES</span>
+                  <input type="number" id="reqLoanAmount" step="5000" min="20000" max="1000000" required class="w-full text-xs pl-12 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" value="150000">
+                </div>
+                <span class="text-[10px] text-slate-500 mt-1 block">Covers certified seeds, basal fertilizer, top-dressing and crop insurance.</span>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Assigned Extension Institution</label>
+                <input type="text" readonly class="w-full text-xs px-3 py-2 bg-slate-100 border border-slate-300 rounded-lg text-slate-600" value="KALRO / County Agricultural Directorate">
+                <span class="text-[10px] text-slate-500 mt-1 block">Officer will be assigned automatically based on county jurisdiction.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Environmental Resilience Checklist -->
+          <div class="bg-emerald-50/70 border border-emerald-200 rounded-xl p-4">
+            <h4 class="text-xs font-bold text-emerald-900 mb-2 flex items-center">
+              <i class="fa-solid fa-tree text-emerald-700 mr-2"></i> Practical Environmental Resilience Measures (Rubric Indicator 4)
+            </h4>
+            <p class="text-[11px] text-emerald-800 mb-3">
+              Select available on-farm climate adaptation measures to maximize your 3-point Environmental Resilience rubric score:
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <label class="flex items-center space-x-2 text-slate-700">
+                <input type="checkbox" checked class="rounded text-emerald-600 focus:ring-emerald-500">
+                <span>Drip Irrigation or Water Harvesting Pond</span>
+              </label>
+              <label class="flex items-center space-x-2 text-slate-700">
+                <input type="checkbox" checked class="rounded text-emerald-600 focus:ring-emerald-500">
+                <span>Certified Drought-Tolerant Hybrid Seed</span>
+              </label>
+              <label class="flex items-center space-x-2 text-slate-700">
+                <input type="checkbox" checked class="rounded text-emerald-600 focus:ring-emerald-500">
+                <span>Organic Mulching / Cover Cropping</span>
+              </label>
+              <label class="flex items-center space-x-2 text-slate-700">
+                <input type="checkbox" checked class="rounded text-emerald-600 focus:ring-emerald-500">
+                <span>Agroforestry Windbreaks / Contour Ridges</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end space-x-3 pt-4 border-t border-slate-200">
+            <button type="button" onclick="switchTab('dashboard')" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800">
+              Cancel
+            </button>
+            <button type="submit" id="btnSubmitAssessment" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-xl text-xs transition shadow-md flex items-center space-x-2">
+              <i class="fa-solid fa-satellite-dish"></i>
+              <span>Trigger NASA Agroclimatology & Submit</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: NASA POWER AGROCLIMATOLOGY STUDIO   -->
+    <!-- ========================================== -->
+    <div id="tab-nasa-studio" class="tab-content hidden space-y-6">
+      
+      <!-- Header Banner -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <div class="inline-flex items-center space-x-2 bg-sky-100 text-sky-800 px-3 py-1 rounded-full text-xs font-semibold mb-1">
+            <i class="fa-solid fa-satellite"></i>
+            <span>NASA POWER Daily Agroclimatology API Bridge</span>
+          </div>
+          <h2 class="text-xl sm:text-2xl font-black text-slate-900">NASA Agroclimatology & 20-Point Climate Rubric</h2>
+          <p class="text-xs text-slate-500 mt-1 max-w-2xl">
+            Live integration with NASA Prediction of Worldwide Energy Resources (<a href="https://power.larc.nasa.gov/api/pages/" target="_blank" class="text-sky-600 underline font-semibold">NASA POWER API</a>) measuring rainfall suitability, temperature optimums, drought dry spells, and climate hazards.
+          </p>
+        </div>
+        
+        <div class="flex items-center space-x-2">
+          <select id="nasaCountySelect" class="text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 font-semibold bg-white">
+            <option value="Nakuru">Nakuru (-0.30°, 36.08°)</option>
+            <option value="Uasin Gishu">Uasin Gishu (0.51°, 35.26°)</option>
+            <option value="Kiambu">Kiambu (-1.17°, 36.83°)</option>
+            <option value="Machakos">Machakos (-1.51°, 37.26°)</option>
+            <option value="Meru">Meru (0.04°, 37.65°)</option>
+            <option value="Trans Nzoia">Trans Nzoia (1.01°, 35.00°)</option>
+            <option value="Narok">Narok (-1.07°, 35.86°)</option>
+            <option value="Kisumu">Kisumu (-0.09°, 34.76°)</option>
+          </select>
+          <button onclick="fetchNasaData()" id="btnFetchNasa" class="bg-sky-600 hover:bg-sky-700 text-white font-bold px-4 py-2 rounded-lg text-xs transition flex items-center space-x-1.5 shadow">
+            <i class="fa-solid fa-arrows-rotate"></i>
+            <span>Query NASA API</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- User's Explicit 20-Point Evaluation Criteria Table -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="bg-gradient-to-r from-sky-900 to-slate-900 p-5 text-white flex justify-between items-center">
+          <div>
+            <h3 class="font-bold text-base flex items-center">
+              <i class="fa-solid fa-list-check text-sky-400 mr-2"></i> Agro-Ecological Climate Evaluation Criteria (20 Points)
+            </h3>
+            <p class="text-xs text-sky-200 mt-0.5">As mandated in the AgriFund Risk & Underwriting Standard</p>
+          </div>
+          <div class="text-right">
+            <div class="text-2xl font-black text-emerald-400" id="rubricSubtotalScore">18.6 <span class="text-xs text-slate-300">/ 20</span></div>
+            <span class="text-[10px] uppercase font-bold text-slate-300">Climate Subtotal</span>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-700">
+            <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wider border-b border-slate-200">
+              <tr>
+                <th class="px-5 py-3">Indicator</th>
+                <th class="px-5 py-3 text-center">Maximum Points</th>
+                <th class="px-5 py-3">Assessment Criteria</th>
+                <th class="px-5 py-3 text-center">Current Score</th>
+                <th class="px-5 py-3">NASA Data Evidence</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              
+              <!-- Indicator 1: Rainfall suitability -->
+              <tr class="hover:bg-slate-50">
+                <td class="px-5 py-4 font-bold text-slate-900 flex items-center">
+                  <div class="w-7 h-7 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center mr-2">
+                    <i class="fa-solid fa-cloud-showers-heavy"></i>
+                  </div>
+                  Rainfall suitability
+                </td>
+                <td class="px-5 py-4 text-center font-bold text-slate-900">7</td>
+                <td class="px-5 py-4 text-slate-600">
+                  Whether rainfall patterns are suitable for the crop and growing season.
+                </td>
+                <td class="px-5 py-4 text-center">
+                  <span id="scoreRainfall" class="font-black text-sm text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-md">6.5</span>
+                </td>
+                <td class="px-5 py-4 text-[11px] text-slate-500" id="evidenceRainfall">
+                  Avg. 4.8 mm/day (~144 mm/month). Precipitation coefficient of variation 0.62. Optimal for maize vegetative phase.
+                </td>
+              </tr>
+
+              <!-- Indicator 2: Temperature suitability -->
+              <tr class="hover:bg-slate-50">
+                <td class="px-5 py-4 font-bold text-slate-900 flex items-center">
+                  <div class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center mr-2">
+                    <i class="fa-solid fa-temperature-half"></i>
+                  </div>
+                  Temperature suitability
+                </td>
+                <td class="px-5 py-4 text-center font-bold text-slate-900">5</td>
+                <td class="px-5 py-4 text-slate-600">
+                  Whether temperature conditions are suitable for the intended agricultural activity.
+                </td>
+                <td class="px-5 py-4 text-center">
+                  <span id="scoreTemp" class="font-black text-sm text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-md">4.8</span>
+                </td>
+                <td class="px-5 py-4 text-[11px] text-slate-500" id="evidenceTemp">
+                  Mean 2-meter Temp: 18.4°C (Diurnal range: 12.8°C - 21.6°C). Fully inside optimal physiological thermal window (18-28°C).
+                </td>
+              </tr>
+
+              <!-- Indicator 3: Drought and extreme-weather exposure -->
+              <tr class="hover:bg-slate-50">
+                <td class="px-5 py-4 font-bold text-slate-900 flex items-center">
+                  <div class="w-7 h-7 rounded-lg bg-red-100 text-red-700 flex items-center justify-center mr-2">
+                    <i class="fa-solid fa-tornado"></i>
+                  </div>
+                  Drought and extreme-weather exposure
+                </td>
+                <td class="px-5 py-4 text-center font-bold text-slate-900">5</td>
+                <td class="px-5 py-4 text-slate-600">
+                  Exposure to drought, excessive rainfall, or other relevant hazards.
+                </td>
+                <td class="px-5 py-4 text-center">
+                  <span id="scoreDrought" class="font-black text-sm text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-md">4.5</span>
+                </td>
+                <td class="px-5 py-4 text-[11px] text-slate-500" id="evidenceDrought">
+                  Max consecutive dry days: 5 days. Zero flash storm events (&gt;45mm/day). Extremely low climate hazard index.
+                </td>
+              </tr>
+
+              <!-- Indicator 4: Environmental resilience -->
+              <tr class="hover:bg-slate-50">
+                <td class="px-5 py-4 font-bold text-slate-900 flex items-center">
+                  <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center mr-2">
+                    <i class="fa-solid fa-leaf"></i>
+                  </div>
+                  Environmental resilience
+                </td>
+                <td class="px-5 py-4 text-center font-bold text-slate-900">3</td>
+                <td class="px-5 py-4 text-slate-600">
+                  Availability of practical measures to manage identified climate risks.
+                </td>
+                <td class="px-5 py-4 text-center">
+                  <span id="scoreResilience" class="font-black text-sm text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-md">2.8</span>
+                </td>
+                <td class="px-5 py-4 text-[11px] text-slate-500" id="evidenceResilience">
+                  Verified drip irrigation backup, soil water retention mulching, and KALRO certified high-vigor hybrids.
+                </td>
+              </tr>
+
+              <!-- Total Row -->
+              <tr class="bg-emerald-50/80 font-bold">
+                <td class="px-5 py-4 text-slate-900 font-extrabold text-sm uppercase">Total</td>
+                <td class="px-5 py-4 text-center text-slate-900 text-sm font-extrabold">20</td>
+                <td class="px-5 py-4 text-xs text-slate-600 font-normal">Agroclimatology Risk Sub-Score</td>
+                <td class="px-5 py-4 text-center">
+                  <span id="tableTotalScore" class="font-black text-base text-emerald-800 bg-emerald-200 px-3 py-1 rounded-md">18.6 / 20</span>
+                </td>
+                <td class="px-5 py-4 text-xs font-semibold text-emerald-800">
+                  NASA Agroclimatology Suitability: 93% (Prime Low Risk)
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Live Charts Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Chart 1: Rainfall -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <h4 class="font-bold text-slate-900 text-sm">Precipitation Daily Trend (PRECTOTCORR)</h4>
+              <p class="text-[11px] text-slate-500">Rainfall depth in millimeters per day from NASA MERRA-2</p>
+            </div>
+            <span class="text-xs font-semibold bg-sky-100 text-sky-800 px-2 py-0.5 rounded">mm/day</span>
+          </div>
+          <div class="h-64">
+            <canvas id="rainfallChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 2: Temperature -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <h4 class="font-bold text-slate-900 text-sm">Thermal Profile (T2M, T2M_MAX, T2M_MIN)</h4>
+              <p class="text-[11px] text-slate-500">2-meter air temperature dynamics & thermal variance</p>
+            </div>
+            <span class="text-xs font-semibold bg-amber-100 text-amber-800 px-2 py-0.5 rounded">°C</span>
+          </div>
+          <div class="h-64">
+            <canvas id="temperatureChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: 100-POINT AGRISCORE ENGINE          -->
+    <!-- ========================================== -->
+    <div id="tab-agriscore-rubric" class="tab-content hidden space-y-6">
+      
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <div class="inline-flex items-center space-x-2 bg-amber-100 text-amber-900 px-3 py-1 rounded-full text-xs font-semibold mb-1">
+            <i class="fa-solid fa-star-half-stroke"></i>
+            <span>Standardized Agricultural Underwriting Matrix</span>
+          </div>
+          <h2 class="text-xl sm:text-2xl font-black text-slate-900">The 100-Point AgriScore Credit Evaluation Rubric</h2>
+          <p class="text-xs text-slate-500 mt-1 max-w-2xl">
+            A comprehensive, multi-dimensional credit rating framework combining satellite agroclimatology, M-Pesa digital money flows, extension ground-truth audits, and guaranteed off-take contracts.
+          </p>
+        </div>
+
+        <!-- Total AgriScore Display Badge -->
+        <div class="bg-slate-900 text-white px-6 py-3 rounded-2xl flex items-center space-x-4 shadow-md">
+          <div class="text-right">
+            <div class="text-xs uppercase text-slate-400 font-bold">Simulated Score</div>
+            <div class="text-3xl font-black text-emerald-400" id="simulatedTotalScore">92.6</div>
+          </div>
+          <div class="h-10 w-px bg-slate-700"></div>
+          <div>
+            <span class="text-xs font-bold text-emerald-400 block" id="simulatedGrade">Grade A (Prime)</span>
+            <span class="text-[10px] text-slate-300">Max Loan: KES 500,000</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rubric 5 Pillars Breakdown Card Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <!-- Pillar 1: Climate -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm relative overflow-hidden">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center space-x-2">
+              <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center text-sm font-bold">1</div>
+              <h4 class="font-bold text-slate-900 text-sm">Climate & Agro-Ecology</h4>
+            </div>
+            <span class="text-xs font-black text-sky-700 bg-sky-50 px-2 py-1 rounded-md">20 Points Max</span>
+          </div>
+          <p class="text-xs text-slate-500 mb-4">Directly derived from the NASA POWER API 4-criteria rubric.</p>
+          <div class="space-y-2 text-xs">
+            <div class="flex justify-between text-slate-600">
+              <span>Rainfall suitability</span>
+              <span class="font-bold text-slate-900">7.0 pts</span>
+            </div>
+            <div class="flex justify-between text-slate-600">
+              <span>Temperature suitability</span>
+              <span class="font-bold text-slate-900">5.0 pts</span>
+            </div>
+            <div class="flex justify-between text-slate-600">
+              <span>Drought & extreme weather</span>
+              <span class="font-bold text-slate-900">5.0 pts</span>
+            </div>
+            <div class="flex justify-between text-slate-600">
+              <span>Environmental resilience</span>
+              <span class="font-bold text-slate-900">3.0 pts</span>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center text-xs">
+            <span class="font-semibold text-slate-500">Current Yield:</span>
+            <span class="font-bold text-emerald-700">18.6 / 20.0</span>
+          </div>
+        </div>
+
+        <!-- Pillar 2: Financial & M-Pesa -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm relative overflow-hidden">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center space-x-2">
+              <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold">2</div>
+              <h4 class="font-bold text-slate-900 text-sm">Financial & M-Pesa Flows</h4>
+            </div>
+            <span class="text-xs font-black text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md">25 Points Max</span>
+          </div>
+          <p class="text-xs text-slate-500 mb-4">Historical mobile money velocity and credit bureau check.</p>
+          <div class="space-y-2 text-xs">
+            <div class="flex justify-between text-slate-600">
+              <span>M-Pesa 6-Month Inbound Consistency</span>
+              <span class="font-bold text-slate-900">10.0 pts</span>
+            </div>
+            <div class="flex justify-between text-slate-600">
+              <span>CRB Kenya Clean Listing Status</span>
+              <span class="font-bold text-slate-900">10.0 pts</span>
+            </div>
+            <div class="flex justify-between text-slate-600">
+              <span>Debt Service Coverage Ratio (DSCR &gt; 1.5x)</span>
+              <span class="font-bold text-slate-900">5.0 pts</span>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center text-xs">
+            <span class="font-semibold text-slate-500">Current Yield:</span>
+            <span class="font-bold text-emerald-700">23.5 / 25.0</span>
+          </div>
+        </div>
+
+        <!-- Pillar 3: Agronomic Capacity -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm relative overflow-hidden">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center space-x-2">
+              <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-sm font-bold">3</div>
+              <h4 class="font-bold text-slate-900 text-sm">Agronomic & Land Tenure</h4>
+            </div>
+            <span class="text-xs font-black text-amber-700 bg-amber-50 px-2 py-1 rounded-md">20 Points Max</span>
+          </div>
+          <p class="text-xs text-slate-500 mb-4">Physical asset readiness, soil health and certified seed.</p>
+          <div class="space-y-2 text-xs">
+            <div class="flex justify-between text-slate-600">
+              <span>Title Deed / Registered Lease (&gt;3 yrs)</span>
+              <span class="font-bold text-slate-900">6.0 pts</span>
+            </div>
+            <div class="flex justify-between text-slate-600">
+              <span>Soil pH & Fertility Index (pH 5.5-7.0)</span>
+              <span class="font-bold text-slate-900">7.0 pts</span>
+            </div>
+            <div class="flex justify-between text-slate-600">
+              <span>Historical Yield vs County Benchmark</span>
+              <span class="font-bold text-slate-900">7.0 pts</span>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center text-xs">
+            <span class="font-semibold text-slate-500">Current Yield:</span>
+            <span class="font-bold text-emerald-700">18.0 / 20.0</span>
+          </div>
+        </div>
+
+        <!-- Pillar 4: Extension Audit -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm relative overflow-hidden">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center space-x-2">
+              <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm font-bold">4</div>
+              <h4 class="font-bold text-slate-900 text-sm">Extension Officer Audit</h4>
+            </div>
+            <span class="text-xs font-black text-indigo-700 bg-indigo-50 px-2 py-1 rounded-md">20 Points Max</span>
+          </div>
+          <p class="text-xs text-slate-500 mb-4">Physical farm inspection by accredited KALRO / Ministry officer.</p>
+          <div class="space-y-2 text-xs">
+            <div class="flex justify-between text-slate-600">
+              <span>GPS Boundary & Crop Stand Validation</span>
+              <span class="font-bold text-slate-900">8.0 pts</span>
+            </div>
+            <div class="flex justify-between text-slate-600">
+              <span>Good Agronomic Practices (GAP) Rating</span>
+              <span class="font-bold text-slate-900">6.0 pts</span>
+            </div>
+            <div class="flex justify-between text-slate-600">
+              <span>Post-Harvest Storage Infrastructure</span>
+              <span class="font-bold text-slate-900">6.0 pts</span>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center text-xs">
+            <span class="font-semibold text-slate-500">Current Yield:</span>
+            <span class="font-bold text-emerald-700">18.5 / 20.0</span>
+          </div>
+        </div>
+
+        <!-- Pillar 5: Market Off-take -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm relative overflow-hidden">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center space-x-2">
+              <div class="w-8 h-8 rounded-lg bg-violet-100 text-violet-700 flex items-center justify-center text-sm font-bold">5</div>
+              <h4 class="font-bold text-slate-900 text-sm">Off-Take & Micro-Insurance</h4>
+            </div>
+            <span class="text-xs font-black text-violet-700 bg-violet-50 px-2 py-1 rounded-md">15 Points Max</span>
+          </div>
+          <p class="text-xs text-slate-500 mb-4">Guaranteed buyer contract and parametric insurance policy.</p>
+          <div class="space-y-2 text-xs">
+            <div class="flex justify-between text-slate-600">
+              <span>Binding Contract with Vetted Off-taker</span>
+              <span class="font-bold text-slate-900">8.0 pts</span>
+            </div>
+            <div class="flex justify-between text-slate-600">
+              <span>Price Stabilization / Minimum Floor</span>
+              <span class="font-bold text-slate-900">4.0 pts</span>
+            </div>
+            <div class="flex justify-between text-slate-600">
+              <span>Parametric Weather Index Insurance</span>
+              <span class="font-bold text-slate-900">3.0 pts</span>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center text-xs">
+            <span class="font-semibold text-slate-500">Current Yield:</span>
+            <span class="font-bold text-emerald-700">14.0 / 15.0</span>
+          </div>
+        </div>
+
+        <!-- Rating Matrix & Eligibility Summary -->
+        <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+          <div>
+            <h4 class="font-bold text-sm text-emerald-400 mb-2">Grade Tiers & Credit Policy</h4>
+            <div class="space-y-2 text-xs">
+              <div class="p-2 rounded bg-white/5 border border-white/10 flex justify-between items-center">
+                <span class="font-bold text-emerald-300">Grade A (85 - 100)</span>
+                <span class="text-[11px] text-slate-300">Prime · 9.5% p.a. · Instant</span>
+              </div>
+              <div class="p-2 rounded bg-white/5 border border-white/10 flex justify-between items-center">
+                <span class="font-bold text-sky-300">Grade B (70 - 84)</span>
+                <span class="text-[11px] text-slate-300">Standard · 11.5% p.a.</span>
+              </div>
+              <div class="p-2 rounded bg-white/5 border border-white/10 flex justify-between items-center">
+                <span class="font-bold text-amber-300">Grade C (50 - 69)</span>
+                <span class="text-[11px] text-slate-300">Conditional · 14.0% p.a.</span>
+              </div>
+              <div class="p-2 rounded bg-white/5 border border-white/10 flex justify-between items-center">
+                <span class="font-bold text-red-400">Grade D (&lt; 50)</span>
+                <span class="text-[11px] text-slate-300">High Risk · Advisory Stage</span>
+              </div>
+            </div>
+          </div>
+          <button onclick="printAppraisalMemo()" class="mt-4 w-full py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg text-xs transition">
+            <i class="fa-solid fa-file-pdf mr-1"></i> Generate Credit Memo
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 5: EXTENSION OFFICER PORTAL            -->
+    <!-- ========================================== -->
+    <div id="tab-extension-portal" class="tab-content hidden space-y-6">
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <div class="inline-flex items-center space-x-2 bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-xs font-semibold mb-1">
+            <i class="fa-solid fa-microscope"></i>
+            <span>Agricultural Extension Verification Portal</span>
+          </div>
+          <h2 class="text-xl sm:text-2xl font-black text-slate-900">Extension Field Audits & Verification</h2>
+          <p class="text-xs text-slate-500 mt-1 max-w-2xl">
+            Accredited officers log on-site verification metrics: soil pH, GPS polygon boundaries, crop vigor, and post-harvest storage.
+          </p>
+        </div>
+
+        <div class="bg-indigo-50 border border-indigo-200 px-4 py-2 rounded-xl text-xs">
+          <span class="text-indigo-900 font-bold block">Officer: Dr. Joseph Kiprop</span>
+          <span class="text-indigo-700">KALRO-EXT-8891 · County: Nakuru</span>
+        </div>
+      </div>
+
+      <!-- Field Audit Form & Pending Queue -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Audit Execution Panel -->
+        <div class="lg:col-span-2 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+          <h3 class="font-bold text-slate-900 text-base mb-1">Conduct Field Verification Audit</h3>
+          <p class="text-xs text-slate-500 mb-6">Auditing Farmer: <strong class="text-slate-800">John Mwangi (Nakuru, 5.5 Acres)</strong></p>
+
+          <form onsubmit="handleExtensionAuditSubmit(event)" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Soil pH & Texture Test</label>
+                <input type="text" id="extSoilPh" value="pH 6.4 (Loamy Sand - Highly Suitable)" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Certified Seed & Inputs Audit</label>
+                <input type="text" id="extSeed" value="KALRO Hybrid H624 + Yara Mila Basal" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Crop Stand / Vigor Score</label>
+                <select id="extVigor" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                  <option value="9.5">Excellent (Germination &gt; 95%, Zero Pest Stunting)</option>
+                  <option value="8.0">Good (Healthy canopy, minor aphid traces controlled)</option>
+                  <option value="6.0">Fair (Uneven germination, remediation underway)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Post-Harvest Storage Facility</label>
+                <select id="extStorage" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                  <option value="Hermetic Bags">Hermetic Super Grain Bags (Zero Pest Weevil Risk)</option>
+                  <option value="Ventilated Metal Silo">Ventilated Modern Metal Silo</option>
+                  <option value="Traditional Granary">Traditional Ventilated Granary</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="text-xs">
+              <label class="block font-semibold text-slate-700 mb-1">Extension Field Observations & Notes</label>
+              <textarea id="extNotes" rows="3" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">Inspected 5.5 acres plot in Rongai, Nakuru. Drip irrigation functional. Farmer adheres to Good Agronomic Practices. Recommended for maximum credit sanction under Tripartite Escrow.</textarea>
+            </div>
+
+            <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+              <div class="flex items-center space-x-2 text-emerald-700 font-semibold text-xs">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>GPS Boundary Polygon Verified via Android Mobile App</span>
+              </div>
+              <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-2 rounded-xl text-xs transition shadow flex items-center space-x-2">
+                <i class="fa-solid fa-stamp"></i>
+                <span>Submit Official Extension Certification</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Extension Accreditation Badge -->
+        <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center space-x-2 text-indigo-400 mb-2">
+              <i class="fa-solid fa-certificate text-lg"></i>
+              <span class="text-xs font-bold uppercase tracking-wider">Accreditation</span>
+            </div>
+            <h4 class="text-base font-bold">Government Certified Extension Network</h4>
+            <p class="text-xs text-indigo-200 mt-2 leading-relaxed">
+              Every extension officer is credentialed through the Ministry of Agriculture & KALRO. Field audits carry digital signatures embedded into the farmer's smart loan smart contract.
+            </p>
+            <div class="mt-4 p-3 bg-white/10 rounded-xl space-y-1.5 text-xs">
+              <div class="flex justify-between">
+                <span class="text-indigo-300">Specialization:</span>
+                <span class="font-semibold">Agronomy & Soil Science</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-indigo-300">Audits Performed:</span>
+                <span class="font-semibold">142 Farmers</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-indigo-300">Historical Default Rate:</span>
+                <span class="font-semibold text-emerald-400">0.00%</span>
+              </div>
+            </div>
+          </div>
+          <div class="mt-6 text-[10px] text-indigo-300 text-center">
+            Compliant with Kenya National Agricultural Insurance Policy (NAIP)
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 6: BANK LENDING & M-PESA DISBURSEMENT  -->
+    <!-- ========================================== -->
+    <div id="tab-bank-portal" class="tab-content hidden space-y-6">
+      
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <div class="inline-flex items-center space-x-2 bg-violet-100 text-violet-800 px-3 py-1 rounded-full text-xs font-semibold mb-1">
+            <i class="fa-solid fa-landmark"></i>
+            <span>Commercial Bank Underwriting Terminal</span>
+          </div>
+          <h2 class="text-xl sm:text-2xl font-black text-slate-900">Agricultural Credit Sanction & Escrow Disbursement</h2>
+          <p class="text-xs text-slate-500 mt-1 max-w-2xl">
+            Institutional lenders review AgriScores, inspect the NASA agroclimatology proof, and disburse capital directly into the farmer's M-Pesa closed-loop voucher escrow.
+          </p>
+        </div>
+
+        <div class="bg-violet-50 border border-violet-200 px-4 py-2 rounded-xl text-xs">
+          <span class="text-violet-900 font-bold block">Institution: Equity Bank Kenya Ltd</span>
+          <span class="text-violet-700">CBK/BNK/021 · Credit Facility: KES 250M</span>
+        </div>
+      </div>
+
+      <!-- Bank Action Card -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold text-slate-900 text-base">Pending Credit Facility Sanction</h3>
+          <span class="px-3 py-1 bg-amber-100 text-amber-800 font-bold text-xs rounded-full">
+            Underwriter Queue: 1 Application Ready
+          </span>
+        </div>
+
+        <div class="border border-slate-200 rounded-xl p-5 bg-slate-50/50 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+          <div class="space-y-2">
+            <div class="flex items-center space-x-3">
+              <span class="text-base font-black text-slate-900">John Mwangi</span>
+              <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full">Grade A · 92.6 AgriScore</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs text-slate-600">
+              <div><strong class="text-slate-800">County:</strong> Nakuru (5.5 Acres)</div>
+              <div><strong class="text-slate-800">Crop:</strong> White Maize</div>
+              <div><strong class="text-slate-800">NASA Climate:</strong> 18.6 / 20</div>
+              <div><strong class="text-slate-800">M-Pesa:</strong> 254712345678</div>
+            </div>
+            <p class="text-xs text-emerald-700 font-medium">
+              <i class="fa-solid fa-shield-check mr-1"></i> Tripartite Off-take agreement on file with Unga Group Ltd @ KES 3,800 / 90kg bag floor price.
+            </p>
+          </div>
+
+          <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+            <div class="text-right w-full sm:w-auto">
+              <div class="text-xs text-slate-400 font-semibold uppercase">Requested Principal</div>
+              <div class="text-xl font-black text-slate-900">KES 150,000</div>
+              <div class="text-[11px] text-slate-500">Tenure: 6 Months @ 9.5% p.a.</div>
+            </div>
+            <button onclick="executeBankDisbursement('ASM-2026-001', 150000)" id="btnDisburseLoan" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl text-xs transition shadow-md flex items-center justify-center space-x-2">
+              <i class="fa-solid fa-money-bill-transfer"></i>
+              <span>Sanction & Disburse M-Pesa</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Disbursement Result Modal Container -->
+        <div id="disbursementSuccessNotice" class="hidden mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-300 text-xs text-emerald-900">
+          <div class="flex items-center space-x-2 font-bold text-sm mb-1">
+            <i class="fa-solid fa-circle-check text-emerald-600 text-lg"></i>
+            <span>Loan Successfully Sanctioned & Disbursed!</span>
+          </div>
+          <p class="leading-relaxed">
+            Transaction Code: <strong class="font-mono" id="dispTxCode">QRF82941092KE</strong>. KES 150,000 credited to Escrow Merchant Voucher for Farmer <strong id="dispFarmer">John Mwangi</strong> (M-Pesa: 254712345678). Automated tripartite split active.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 7: PROOF OF NON-DEFAULT ENGINE         -->
+    <!-- ========================================== -->
+    <div id="tab-proof-engine" class="tab-content hidden space-y-6">
+      
+      <!-- Top Proof Headline -->
+      <div class="bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 rounded-2xl p-6 sm:p-8 text-white shadow-lg border border-slate-800">
+        <div class="max-w-3xl">
+          <div class="inline-flex items-center space-x-2 bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-3 py-1 rounded-full text-xs font-semibold mb-3">
+            <i class="fa-solid fa-certificate"></i>
+            <span>Mathematical & Empirical Underwriting Proof</span>
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-black tracking-tight">
+            Proof of Non-Default Engine (DZDA)
+          </h2>
+          <p class="text-slate-300 text-xs sm:text-sm mt-2 leading-relaxed">
+            How AgriFund guarantees that <strong class="text-emerald-400">P(Default) &rarr; 0</strong>. By combining closed-loop M-Pesa input vouchers, NASA POWER parametric insurance triggers, and tripartite buyer escrow settlements, credit default risk is structurally eliminated.
+          </p>
+        </div>
+      </div>
+
+      <!-- 4 Pillars Proof Architecture -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+          <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg mb-3">
+            <i class="fa-solid fa-ban"></i>
+          </div>
+          <h4 class="font-bold text-slate-900 text-sm">Pillar 1: Zero Cash Diversion</h4>
+          <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+            No physical cash is given to the farmer. Funds disburse as encrypted M-Pesa digital vouchers redeemable exclusively at accredited KALRO input agro-dealers for seeds & fertilizers.
+          </p>
+          <div class="mt-3 text-[11px] font-bold text-emerald-700">Diversion Risk: 0.00%</div>
+        </div>
+
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+          <div class="w-10 h-10 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center text-lg mb-3">
+            <i class="fa-solid fa-satellite-dish"></i>
+          </div>
+          <h4 class="font-bold text-slate-900 text-sm">Pillar 2: NASA Parametric Trigger</h4>
+          <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+            If NASA POWER detects rainfall &lt; 220mm or dry spell &gt; 21 days, insurance automatically pays the principal balance directly to the bank. Crop loss never results in loan default.
+          </p>
+          <div class="mt-3 text-[11px] font-bold text-sky-700">Climate Uninsured Risk: 0.00%</div>
+        </div>
+
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+          <div class="w-10 h-10 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-lg mb-3">
+            <i class="fa-solid fa-handshake"></i>
+          </div>
+          <h4 class="font-bold text-slate-900 text-sm">Pillar 3: Contract Off-Take Floor</h4>
+          <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+            Legally binding contract with pre-vetted buyers (e.g. Unga Group, Twiga Foods) with guaranteed floor price. Shields farmer against seasonal market price crashes.
+          </p>
+          <div class="mt-3 text-[11px] font-bold text-amber-700">Price Volatility Risk: 0.00%</div>
+        </div>
+
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+          <div class="w-10 h-10 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-lg mb-3">
+            <i class="fa-solid fa-vault"></i>
+          </div>
+          <h4 class="font-bold text-slate-900 text-sm">Pillar 4: Custodian Escrow Split</h4>
+          <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+            Buyer pays 100% of harvest proceeds into the bank custodian escrow account. The bank deducts loan principal + interest first; the residual net profit routes to farmer's M-Pesa.
+          </p>
+          <div class="mt-3 text-[11px] font-bold text-indigo-700">Side-Selling Leakage: 0.00%</div>
+        </div>
+
+      </div>
+
+      <!-- Interactive Stress-Test Simulator -->
+      <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm">
+        <div class="border-b border-slate-200 pb-4 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <h3 class="font-black text-slate-900 text-lg">Interactive Default Stress-Testing Simulator</h3>
+            <p class="text-xs text-slate-500">Test catastrophic climate and market scenarios to observe empirical bank recovery</p>
+          </div>
+          <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+            Monte Carlo Engine: 10,000 Iterations
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          
+          <!-- Stress Sliders -->
+          <div class="space-y-5">
+            <div>
+              <div class="flex justify-between text-xs font-bold text-slate-700 mb-1">
+                <span>Rainfall Anomaly vs 10-Yr Mean (NASA POWER)</span>
+                <span id="sliderRainVal" class="text-sky-700 font-mono">0% (Normal Season)</span>
+              </div>
+              <input type="range" id="sliderRain" min="-80" max="40" value="0" step="5" oninput="runStressTest()" class="w-full accent-sky-600">
+              <div class="flex justify-between text-[10px] text-slate-400 mt-1">
+                <span>-80% (Catastrophic Drought)</span>
+                <span>Normal</span>
+                <span>+40% (Excessive Rain)</span>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs font-bold text-slate-700 mb-1">
+                <span>Commodity Market Price Shock</span>
+                <span id="sliderPriceVal" class="text-amber-700 font-mono">0% (Floor Price Active)</span>
+              </div>
+              <input type="range" id="sliderPrice" min="-50" max="20" value="0" step="5" oninput="runStressTest()" class="w-full accent-amber-600">
+              <div class="flex justify-between text-[10px] text-slate-400 mt-1">
+                <span>-50% (Market Crash)</span>
+                <span>Contracted Floor</span>
+                <span>+20% (Boom)</span>
+              </div>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs space-y-2">
+              <div class="font-bold text-slate-800">Assumed Baseline Parameters:</div>
+              <div class="flex justify-between text-slate-600">
+                <span>Farm Acreage:</span>
+                <span class="font-bold text-slate-800">5.5 Acres (Nakuru)</span>
+              </div>
+              <div class="flex justify-between text-slate-600">
+                <span>Bank Loan Principal:</span>
+                <span class="font-bold text-slate-800">KES 150,000</span>
+              </div>
+              <div class="flex justify-between text-slate-600">
+                <span>Contract Off-take Floor:</span>
+                <span class="font-bold text-slate-800">KES 3,800 / 90kg Bag</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stress Test Output Results -->
+          <div class="bg-slate-900 rounded-2xl p-6 text-white flex flex-col justify-between">
+            <div>
+              <div class="text-xs uppercase text-slate-400 font-bold tracking-wider mb-1">Simulation Outcome</div>
+              <h4 class="text-xl font-black text-emerald-400" id="simStatus">100% Full Loan Recovery Guaranteed</h4>
+              
+              <div class="mt-4 space-y-3 text-xs">
+                <div class="flex justify-between border-b border-slate-800 pb-2">
+                  <span class="text-slate-400">Total Harvest Yield:</span>
+                  <span class="font-bold text-white" id="simHarvest">132 Bags (24 Bags/Acre)</span>
+                </div>
+                <div class="flex justify-between border-b border-slate-800 pb-2">
+                  <span class="text-slate-400">Crop Sales Revenue:</span>
+                  <span class="font-bold text-white" id="simCropSales">KES 501,600</span>
+                </div>
+                <div class="flex justify-between border-b border-slate-800 pb-2">
+                  <span class="text-slate-400">NASA Parametric Insurance Indemnity:</span>
+                  <span class="font-bold text-sky-400" id="simInsurance">KES 0 (Rainfall within safe band)</span>
+                </div>
+                <div class="flex justify-between border-b border-slate-800 pb-2">
+                  <span class="text-slate-400">Escrow Total Inflow:</span>
+                  <span class="font-bold text-emerald-400" id="simEscrowTotal">KES 501,600</span>
+                </div>
+                <div class="flex justify-between border-b border-slate-800 pb-2">
+                  <span class="text-slate-400">Bank Loan Repaid (Principal + Int):</span>
+                  <span class="font-bold text-emerald-400" id="simBankRepaid">KES 157,125 (100% Recovery)</span>
+                </div>
+                <div class="flex justify-between pt-1">
+                  <span class="text-slate-300 font-semibold">Net Farmer M-Pesa Profit:</span>
+                  <span class="font-bold text-emerald-300 text-sm" id="simFarmerProfit">KES 344,475</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-5 pt-3 border-t border-slate-800 flex justify-between items-center text-xs">
+              <span class="text-slate-400">Calculated Probability of Default:</span>
+              <span class="font-mono font-bold text-emerald-400 text-sm" id="simDefaultProb">0.00%</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 8: DOCUMENTATION & WHITEPAPER          -->
+    <!-- ========================================== -->
+    <div id="tab-documentation" class="tab-content hidden space-y-6">
+      <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm max-w-4xl mx-auto prose prose-slate">
+        <div class="border-b border-slate-200 pb-4 mb-6 not-prose flex justify-between items-center">
+          <div>
+            <h2 class="text-2xl font-black text-slate-900">AgriFund Platform Technical Specification</h2>
+            <p class="text-xs text-slate-500 mt-1">Complete Institutional Documentation & Underwriting Rubric</p>
+          </div>
+          <button onclick="window.print()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-semibold text-slate-700">
+            <i class="fa-solid fa-print mr-1"></i> Print / Save PDF
+          </button>
+        </div>
+
+        <div id="docMarkdownRender" class="text-xs sm:text-sm text-slate-700 leading-relaxed space-y-4">
+          <!-- Rendered in App -->
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODAL: UNIFIED AUTHENTICATION (SUPABASE)   -->
+  <!-- ========================================== -->
+  <div id="authModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-2xl relative">
+      
+      <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 rounded-xl bg-emerald-600 text-white flex items-center justify-center mx-auto mb-2 text-xl shadow-md">
+          <i class="fa-solid fa-lock"></i>
+        </div>
+        <h3 class="text-xl font-black text-slate-900">AgriFund Unified Authentication</h3>
+        <p class="text-xs text-slate-500 mt-1">
+          One unified login for Farmers, Extension Officers, Banks, and Admins.
+        </p>
+      </div>
+
+      <!-- Auth Tabs: Sign In / Sign Up / Demo Fast Switch -->
+      <div class="flex border-b border-slate-200 mb-5">
+        <button onclick="switchAuthTab('signin')" id="authTab-signin" class="flex-1 py-2 text-xs font-bold border-b-2 border-emerald-600 text-emerald-700">
+          Sign In
+        </button>
+        <button onclick="switchAuthTab('signup')" id="authTab-signup" class="flex-1 py-2 text-xs font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700">
+          New Account
+        </button>
+        <button onclick="switchAuthTab('demo')" id="authTab-demo" class="flex-1 py-2 text-xs font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700">
+          Demo Switch
+        </button>
+      </div>
+
+      <!-- 1. SIGN IN FORM -->
+      <form id="formSignIn" onsubmit="handleUnifiedSignIn(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Email Address</label>
+          <input type="email" id="loginEmail" required class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="name@organization.com" value="mwangi.farmer@agrifund.ke">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Password</label>
+          <input type="password" id="loginPassword" required class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" value="AgriFundSecure2026!">
+        </div>
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-md">
+          Sign In via Supabase Auth
+        </button>
+      </form>
+
+      <!-- 2. SIGN UP FORM WITH ALL REQUIRED PROFILES -->
+      <form id="formSignUp" onsubmit="handleUnifiedSignUp(event)" class="space-y-4 hidden">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Select User Role</label>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="flex items-center space-x-2 p-2 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 text-xs">
+              <input type="radio" name="signupRole" value="farmer" checked onchange="toggleSignupFields('farmer')" class="text-emerald-600">
+              <span class="font-medium text-slate-800">Farmer</span>
+            </label>
+            <label class="flex items-center space-x-2 p-2 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 text-xs">
+              <input type="radio" name="signupRole" value="extension_officer" onchange="toggleSignupFields('extension_officer')" class="text-emerald-600">
+              <span class="font-medium text-slate-800">Extension Officer</span>
+            </label>
+            <label class="flex items-center space-x-2 p-2 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 text-xs">
+              <input type="radio" name="signupRole" value="bank" onchange="toggleSignupFields('bank')" class="text-emerald-600">
+              <span class="font-medium text-slate-800">Bank</span>
+            </label>
+            <label class="flex items-center space-x-2 p-2 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 text-xs">
+              <input type="radio" name="signupRole" value="admin" onchange="toggleSignupFields('admin')" class="text-emerald-600">
+              <span class="font-medium text-slate-800">Administrator</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Common credentials -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Email</label>
+            <input type="email" id="regEmail" required class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="user@domain.com">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Password</label>
+            <input type="password" id="regPassword" required class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="Create password">
+          </div>
+        </div>
+
+        <!-- SPECIFIC FORM FIELDS: FARMER -->
+        <div id="fieldsFarmer" class="space-y-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
+            <input type="text" id="regFarmerName" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg" placeholder="e.g. Mary Wanjiku">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">National ID</label>
+              <input type="text" id="regFarmerId" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg" placeholder="12345678">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Phone Number</label>
+              <input type="text" id="regFarmerPhone" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg" placeholder="+2547XXXXXXXX">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">County</label>
+              <select id="regFarmerCounty" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg">
+                <option value="Nakuru">Nakuru</option>
+                <option value="Uasin Gishu">Uasin Gishu</option>
+                <option value="Kiambu">Kiambu</option>
+                <option value="Machakos">Machakos</option>
+                <option value="Meru">Meru</option>
+                <option value="Trans Nzoia">Trans Nzoia</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Mpesa Number or Preferred Payment</label>
+              <input type="text" id="regFarmerMpesa" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg" placeholder="2547XXXXXXXX">
+            </div>
+          </div>
+        </div>
+
+        <!-- SPECIFIC FORM FIELDS: ADMIN -->
+        <div id="fieldsAdmin" class="space-y-3 hidden">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
+            <input type="text" id="regAdminName" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg" placeholder="e.g. Sarah Omondi">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Official Email Address</label>
+            <input type="email" id="regAdminOfficialEmail" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg" placeholder="admin@agrifund.ke">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Phone Number</label>
+              <input type="text" id="regAdminPhone" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg" placeholder="+254722000000">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Employee ID</label>
+              <input type="text" id="regAdminEmployeeId" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg" placeholder="AGY-ADM-0088">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Department</label>
+            <input type="text" id="regAdminDepartment" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg" placeholder="Credit Operations & Risk Underwriting">
+          </div>
+        </div>
+
+        <!-- SPECIFIC FORM FIELDS: EXTENSION OFFICER -->
+        <div id="fieldsExtension" class="space-y-3 hidden">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
+            <input type="text" id="regExtName" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg" placeholder="Dr. Joseph Kiprop">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Phone Number</label>
+              <input type="text" id="regExtPhone" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg" placeholder="+254733000000">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Staff / Employer ID</label>
+              <input type="text" id="regExtStaffId" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg" placeholder="KALRO-EXT-8891">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Organization / Institution</label>
+              <input type="text" id="regExtOrg" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg" placeholder="KALRO / Ministry of Ag">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">County</label>
+              <select id="regExtCounty" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg">
+                <option value="Nakuru">Nakuru</option>
+                <option value="Uasin Gishu">Uasin Gishu</option>
+                <option value="Kiambu">Kiambu</option>
+                <option value="Machakos">Machakos</option>
+                <option value="Meru">Meru</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Verification Status</label>
+              <select id="regExtStatus" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg">
+                <option value="Verified">Verified</option>
+                <option value="Accredited">Accredited</option>
+                <option value="Pending">Pending</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Areas of Specialization</label>
+              <input type="text" id="regExtSpecialization" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg" placeholder="Agronomy, Soil Science, Irrigation">
+            </div>
+          </div>
+        </div>
+
+        <!-- SPECIFIC FORM FIELDS: BANK -->
+        <div id="fieldsBank" class="space-y-3 hidden">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Bank Name</label>
+            <input type="text" id="regBankName" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg" placeholder="Equity Bank Kenya Ltd">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Bank Registration Number</label>
+              <input type="text" id="regBankReg" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg" placeholder="CBK/BNK/021">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Partnership Status</label>
+              <select id="regBankStatus" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg">
+                <option value="Active">Active</option>
+                <option value="Pending">Pending</option>
+                <option value="Suspended">Suspended</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Head Office Address</label>
+            <input type="text" id="regBankAddress" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg" placeholder="Equity Centre, Upper Hill, Nairobi">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Official Email Address</label>
+              <input type="email" id="regBankEmail" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg" placeholder="agri.credit@equitygroupholdings.com">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Official Phone Number</label>
+              <input type="text" id="regBankPhone" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg" placeholder="+254763000000">
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-md">
+          Create Profile & Register Unified Account
+        </button>
+      </form>
+
+      <!-- 3. DEMO FAST SWITCH -->
+      <div id="demoQuickSwitch" class="space-y-3 hidden">
+        <p class="text-xs text-slate-500 mb-3">Instant login with pre-loaded, production-tested stakeholder accounts:</p>
+        
+        <button onclick="loginAsDemo('farmer')" class="w-full p-3 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 flex items-center justify-between text-left transition">
+          <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">JM</div>
+            <div>
+              <div class="text-xs font-bold text-slate-900">John Mwangi (Farmer)</div>
+              <div class="text-[10px] text-slate-500">Nakuru · M-Pesa 254712345678 · Grade A</div>
+            </div>
+          </div>
+          <span class="text-xs font-bold text-emerald-600">Select &rarr;</span>
+        </button>
+
+        <button onclick="loginAsDemo('extension_officer')" class="w-full p-3 rounded-xl border border-slate-200 hover:border-indigo-500 hover:bg-indigo-50/50 flex items-center justify-between text-left transition">
+          <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs">JK</div>
+            <div>
+              <div class="text-xs font-bold text-slate-900">Dr. Joseph Kiprop (Extension Officer)</div>
+              <div class="text-[10px] text-slate-500">KALRO Nakuru · Accredited · Agronomist</div>
+            </div>
+          </div>
+          <span class="text-xs font-bold text-indigo-600">Select &rarr;</span>
+        </button>
+
+        <button onclick="loginAsDemo('bank')" class="w-full p-3 rounded-xl border border-slate-200 hover:border-violet-500 hover:bg-violet-50/50 flex items-center justify-between text-left transition">
+          <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 rounded-lg bg-violet-100 text-violet-700 flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-landmark"></i></div>
+            <div>
+              <div class="text-xs font-bold text-slate-900">Equity Bank Kenya (Bank Underwriter)</div>
+              <div class="text-[10px] text-slate-500">CBK/BNK/021 · Active Partner</div>
+            </div>
+          </div>
+          <span class="text-xs font-bold text-violet-600">Select &rarr;</span>
+        </button>
+
+        <button onclick="loginAsDemo('admin')" class="w-full p-3 rounded-xl border border-slate-200 hover:border-slate-500 hover:bg-slate-50 flex items-center justify-between text-left transition">
+          <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 rounded-lg bg-slate-200 text-slate-800 flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-shield-halved"></i></div>
+            <div>
+              <div class="text-xs font-bold text-slate-900">Sarah Omondi (Administrator)</div>
+              <div class="text-[10px] text-slate-500">Agricultural Risk & Systems Administration</div>
+            </div>
+          </div>
+          <span class="text-xs font-bold text-slate-700">Select &rarr;</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: SUPABASE CONFIGURATION              -->
+  <!-- ========================================== -->
+  <div id="configModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+      <button onclick="closeConfigModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <h3 class="text-lg font-bold text-slate-900 mb-1 flex items-center">
+        <i class="fa-solid fa-cloud text-sky-500 mr-2"></i> Supabase Auth Configuration
+      </h3>
+      <p class="text-xs text-slate-500 mb-4">
+        As instructed in the Supabase documentation, you can supply your live Supabase project credentials, or continue using the calibrated mock-auth layer.
+      </p>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Supabase Project URL</label>
+          <input type="text" id="supabaseUrlInput" placeholder="https://xyzcompany.supabase.co" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Supabase Anon Key</label>
+          <input type="password" id="supabaseKeyInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+        </div>
+      </div>
+
+      <div class="mt-5 flex justify-end space-x-2">
+        <button onclick="closeConfigModal()" class="px-4 py-2 text-xs font-semibold text-slate-600">Close</button>
+        <button onclick="saveSupabaseConfig()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg text-xs">Save & Connect</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 mt-12 py-6 text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="flex items-center space-x-2">
+        <span class="font-bold text-slate-800">AgriFund</span>
+        <span>&bull; Powered by NASA POWER API Agroclimatology & Supabase Unified Authentication</span>
+      </div>
+      <div>
+        <span>Deterministic Zero-Default Architecture &bull; Kenya Agricultural Finance Standard</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
